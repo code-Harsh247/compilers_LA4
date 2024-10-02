@@ -1089,7 +1089,7 @@ yyreduce:
 
   case 3: /* S: PLUS P  */
 #line 32 "poly.y"
-            {
+             {
         (yyval.node) = createNode('S');
         addChild((yyval.node), createNode('+'));
         addChild((yyval.node), (yyvsp[0].node));
@@ -1101,7 +1101,7 @@ yyreduce:
 
   case 4: /* S: MINUS P  */
 #line 39 "poly.y"
-             {
+              {
         (yyval.node) = createNode('S');
         addChild((yyval.node), createNode('-'));
         addChild((yyval.node), (yyvsp[0].node));

@@ -29,14 +29,14 @@ S:
         addChild($$, $1);
         treeroot = $$;     
     }
-    |PLUS P {
+    | PLUS P {
         $$ = createNode('S');
         addChild($$, createNode('+'));
         addChild($$, $2);
         treeroot = $$;  
         
     }
-    |MINUS P {
+    | MINUS P {
         $$ = createNode('S');
         addChild($$, createNode('-'));
         addChild($$, $2);

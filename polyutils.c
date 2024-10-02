@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define POSITIVE 1
+#define NEGATIVE -1
+
 Node* treeroot = NULL;
 
 Node* createNode(char data) {
@@ -24,16 +27,26 @@ void addChild(Node* parent, Node* child) {
     }
 }
 
+void printParsetree(Node* root, int level){
+    if(root == NULL) return;
+    for(int i = 0; i < level; i++){
+        printf("    ");
+    }
+    printf("%c\n", root->data);
+    printParsetree(root->children, level + 1);
+    printParsetree(root->sibling, level);
+}
+
 void printAnnotatedTree(Node* root, int depth) {
     if (root == NULL) return;
     
     // Print indentation
     for (int i = 0; i < depth; i++) {
-        printf("==>");
+        printf("    ");
     }
     
     // Print node data and relevant attributes
-    printf(" %c", root->data);
+    printf("=>%c", root->data);
     
     // Print attributes based on node type
     switch (root->data) {
@@ -81,76 +94,79 @@ void freeTree(Node* root) {
     free(root);
 }
 
-void setatt(Node* root) {
-    if (root == NULL) return;
+void setatt(Node* node, int inh){
+    if(node == NULL) return;
+    Node* leftChild = node->children;
+    Node* middleChild = leftChild!=NULL? leftChild->sibling : NULL;
+    Node* rightChild =  middleChild!=NULL? middleChild->sibling : NULL;
+   
+    node->inh = inh;  // Set inherited attribute for all nodes
 
-    // Set attributes based on node type
-    switch (root->data) {
+    switch(node->data){
         case 'S':
-            // S node doesn't need any attribute setting
+            if(leftChild->data == 'P'){
+                setatt(leftChild, POSITIVE);
+            }
+            else {
+                setatt(middleChild, leftChild->data == '+' ? POSITIVE : NEGATIVE);
+            }
             break;
         case 'P':
-            // P inherits sign from parent S or P
-            if (root->children && root->children->data == '-') {
-                root->inh = -1;
-            } else {
-                root->inh = 1;
-            }
-            
-            // Pass inherited sign to T
-            if (root->children && root->children->data == 'T') {
-                root->children->inh = root->inh;
+            setatt(leftChild, inh);
+            if(middleChild != NULL){
+                setatt(rightChild, middleChild->data == '+' ? POSITIVE : NEGATIVE);
             }
             break;
         case 'T':
-            // T inherits sign from parent P
-            // Already set when processing P
+            setatt(leftChild, inh);
+            if(middleChild) setatt(middleChild, 0);
             break;
         case 'N':
-            // N computes its value from its children
-            root->val = 0;
-            Node* child = root->children;
-            while (child) {
-                if (child->data >= '0' && child->data <= '9') {
-                    root->val = root->val * 10 + (child->data - '0');
-                }
-                child = child->sibling;
+            if(middleChild != NULL){
+                setatt(leftChild, 0);
+                setatt(middleChild, leftChild->data - '0');
+                node->val = middleChild->val;
+            } else {
+                setatt(leftChild, 0);
+                node->val = leftChild->val;
             }
             break;
         case 'M':
-            // M inherits from parent and computes its value
-            if (root->children) {
-                if (root->children->data >= '0' && root->children->data <= '9') {
-                    root->val = root->inh * 10 + (root->children->data - '0');
-                }
-            }
-            
-            // Pass computed value to child M if it exists
-            if (root->children && root->children->sibling && root->children->sibling->data == 'M') {
-                root->children->sibling->inh = root->val;
+            if(middleChild != NULL){
+                setatt(leftChild, 0);
+                int newInh = 10 * inh + (leftChild->data - '0');
+                setatt(middleChild, newInh);
+                node->val = middleChild->val;
+            } else {
+                setatt(leftChild, 0);
+                node->val = inh * 10 + (leftChild->data - '0');
             }
             break;
         case 'X':
-            // X doesn't need attribute setting
+            setatt(leftChild, 0);
+            if(middleChild) setatt(middleChild, 0);
+            if(rightChild) setatt(rightChild, 0);
+            break;
+        case 'x':
+        case '+':
+        case '-':
+        case '^':
+        case '*': 
             break;
         default:
-            // Handle leaf nodes (digits)
-            if (root->data >= '0' && root->data <= '9') {
-                root->val = root->data - '0';
+            if(node->data >= '0' && node->data <= '9'){
+                node->val = node->data - '0';
             }
             break;
     }
-
-    // Recursively set attributes for children
-    setatt(root->children);
     
-    // Recursively set attributes for siblings
-    setatt(root->sibling);
+    // printf("Node %c: inh = %d, val = %d\n", node->data, node->inh, node->val);
 }
 
 int main(){
     yyparse();
-    setatt(treeroot);
+    setatt(treeroot,POSITIVE);
     printAnnotatedTree(treeroot, 0);
+    // printParsetree(treeroot, 0);
     return 0;
 }

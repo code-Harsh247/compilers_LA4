@@ -15,6 +15,7 @@ struct Node {
 Node* createNode(char data);
 void addChild(Node* parent, Node* child);
 void printAnnotatedTree(Node* root, int depth);
+void printParsetree(Node* root, int level);
 void freeTree(Node* root);
 
 
