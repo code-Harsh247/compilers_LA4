@@ -159,14 +159,64 @@ void setatt(Node* node, int inh){
             }
             break;
     }
-    
-    // printf("Node %c: inh = %d, val = %d\n", node->data, node->inh, node->val);
 }
+
+int calculateExpo(int x, int y){
+    int ans = 1;
+    for(int i = 0; i < y; i++){
+        ans *= x;
+    }
+    return ans;
+}
+
+int evalpoly(Node* node, int x){
+    if(node == NULL) return 0;
+    Node* leftChild = node->children;
+    Node* middleChild = leftChild!=NULL? leftChild->sibling : NULL;
+    Node* rightChild =  middleChild!=NULL? middleChild->sibling : NULL;
+
+    switch(node->data){
+        case 'S':
+            if(middleChild) return evalpoly(middleChild, x);
+            else return evalpoly(leftChild, x);
+            break;
+        case 'P': 
+            if(rightChild) return evalpoly(leftChild, x) + evalpoly(rightChild, x);
+            else return evalpoly(leftChild, x);
+            break;
+        case 'T':
+            if(middleChild){
+                return evalpoly(leftChild,x)*evalpoly(middleChild,x)*(node->inh);
+            }
+            else return evalpoly(leftChild, x)*(node->inh);
+            break;
+        case 'N':
+            return node->val;
+            break;
+        case 'X':
+            if(rightChild) return calculateExpo(x, evalpoly(rightChild, x));
+            else return x;
+            break;
+        
+        default:
+            if(node->data<='9' && node->data>='0') return node->data - '0';
+            else return 0;
+            break; 
+    }
+}
+
+
+
 
 int main(){
     yyparse();
     setatt(treeroot,POSITIVE);
     printAnnotatedTree(treeroot, 0);
-    // printParsetree(treeroot, 0);
+    int ans = 0;
+    printf("\nPolynomial value f(x) for x = -5 to 5 is :- \n\n");
+    for(int i = -5; i <= 5; i++){
+        ans = evalpoly(treeroot, i);
+        printf("f(%d) = %d\n", i, ans);
+    }
     return 0;
 }
