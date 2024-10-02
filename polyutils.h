@@ -17,6 +17,7 @@ Node* createNode(char data);
 void addChild(Node* parent, Node* child);
 int calculateExpo(int x, int y);
 int evalpoly(Node* node, int x);
+int isConstant(Node* node);
 void setatt(Node* node, int inh);
 void printderivative(Node* node);
 void printAnnotatedTree(Node* root, int depth);

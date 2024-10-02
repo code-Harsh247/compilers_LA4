@@ -205,8 +205,77 @@ int evalpoly(Node* node, int x){
     }
 }
 
+int isConstant(Node* node){
+    if(node == NULL) return 1;
+    Node* leftChild = node->children;
+    Node* middleChild = leftChild!=NULL? leftChild->sibling : NULL;
+    Node* rightChild =  middleChild!=NULL? middleChild->sibling : NULL;
+    char data = node->data;
+    if(data == '+' || data == '-' || data == '^' || (data>='0' && data <= '9') || data == 'N') return 1;
+    else if(data == 'X' || data == 'x') return 0;
+    else return isConstant(leftChild)*isConstant(middleChild)*isConstant(rightChild);
+}
+
+int xPower(Node* node){
+    if(node == NULL) return 0;
+    Node* leftChild = node->children;
+    Node* middleChild = leftChild!=NULL? leftChild->sibling : NULL;
+    Node* rightChild =  middleChild!=NULL? middleChild->sibling : NULL;
+
+    if(node->data == 'X'){
+        if(rightChild) return rightChild->val;
+        else return 1;
+    }
+    else {
+        printf("Error in xPower\n");
+        return -1;
+    }
+}
 
 
+void printderivative(Node* node){
+    if(node == NULL) return;
+    Node* leftChild = node->children;
+    Node* middleChild = leftChild!=NULL? leftChild->sibling : NULL;
+    Node* rightChild =  middleChild!=NULL? middleChild->sibling : NULL;
+
+    switch(node->data){
+        case 'S':
+            if(middleChild) printderivative(middleChild);
+            else printderivative(leftChild);
+            break;
+        case 'P':
+            printderivative(leftChild);
+            if(rightChild) printderivative(rightChild);
+            break;
+        case 'T':
+            if(isConstant(node)){
+                return;
+            };
+
+            if(node->inh == POSITIVE) printf("+");
+            else printf("-");
+
+            if(middleChild){
+                printf("%d", (leftChild->val)*xPower(middleChild));
+                printderivative(middleChild);
+            }
+            else{
+                printf("%d", xPower(leftChild));
+                printderivative(leftChild);
+            }
+            break;
+            case 'X':
+                if(rightChild){
+                    if(rightChild->val == 2) printf("x");
+                    else printf("x^%d", rightChild->val-1);    
+                }
+                break;
+            default:
+                printf("Error \n");
+                break;
+    }
+}
 
 int main(){
     yyparse();
@@ -218,5 +287,13 @@ int main(){
         ans = evalpoly(treeroot, i);
         printf("f(%d) = %d\n", i, ans);
     }
+    printf("\nDerivative of the polynomial is :- \n");
+    if(isConstant(treeroot)){
+        printf("0\n");
+    }
+    else{
+        printderivative(treeroot);
+    }
+    printf("\n");
     return 0;
 }

@@ -5,7 +5,7 @@ BISON_OUTPUT = poly.tab.c
 BISON_HEADER = poly.tab.h
 LEX_OUTPUT = lex.yy.c
 EXE = ./a.out
-INPUT = test.txt
+INPUT = sample.txt
 OUTPUT_FILE = output.txt
 
 all: 
