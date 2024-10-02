@@ -5,7 +5,8 @@
 %}
 
 %code requires {
-    #include "poly.h"
+    #include "polyutils.h"
+    extern Node* treeroot;
 }
 
 %union{
@@ -26,21 +27,20 @@ S:
     P {
         $$ = createNode('S');
         addChild($$, $1);
-        printTree($$,0);
-           
+        treeroot = $$;     
     }
     |PLUS P {
         $$ = createNode('S');
         addChild($$, createNode('+'));
         addChild($$, $2);
-        printTree($$,0); 
+        treeroot = $$;  
         
     }
     |MINUS P {
         $$ = createNode('S');
         addChild($$, createNode('-'));
         addChild($$, $2);
-        printTree($$,0);
+        treeroot = $$;  
         
     }
     ;
